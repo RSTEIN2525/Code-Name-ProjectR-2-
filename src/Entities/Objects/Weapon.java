@@ -69,13 +69,20 @@ public abstract class Weapon
 		// TODO Auto-generated method stub
 		
 	}
+	
+	public void upAttack() {}
 
-	public void upAttack() {
+	public void projectileAttack() {
 		// TODO Auto-generated method stub
 		
 	}
 
 	public void hitboxPathing() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void areaOfEffectAttack() {
 		// TODO Auto-generated method stub
 		
 	}

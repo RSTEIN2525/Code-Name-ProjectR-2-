@@ -4,7 +4,8 @@ import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 
-import Entities.Hitbox.Side;
+import Entities.Hitboxes.Hitbox;
+import Entities.Hitboxes.Hitbox.Side;
 
 public class Dummy extends Entity
 {
@@ -22,7 +23,7 @@ public class Dummy extends Entity
 		this.y = y;
 		this.w = w;
 		this.h = h;
-		hitbox = new Hitbox(x,y,w,h,"Player");
+		//hitbox = new Hitbox(x,y,w,h,"Player");
 	}
 	
 	public void render(Graphics g) 

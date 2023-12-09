@@ -1,6 +1,7 @@
 package Entities;
 
-import Entities.Hitbox.Side;
+import Entities.Hitboxes.Hitbox;
+import Entities.Hitboxes.Hitbox.Side;
 
 public abstract class Entity 
 {

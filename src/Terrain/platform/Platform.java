@@ -4,7 +4,7 @@ import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 
-import Entities.Hitbox;
+import Entities.Hitboxes.Hitbox;
 
 public class Platform 
 {
@@ -19,7 +19,7 @@ public class Platform
 		this.y = y;
 		this.width = width;
 		this.height = height;
-		h =  new Hitbox(x,y,width,height,"Platform");
+		h =  new Hitbox(x,y,width,height,"Platform", null);
 	}
 	
 	public void render(Graphics g) 

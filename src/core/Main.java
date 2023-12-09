@@ -12,14 +12,17 @@ public class Main extends StateBasedGame
 	private static AppGameContainer appgc;
 	
     public static final int GAME_ID  = 0;
+    public static final int END_ID = 1;
     
     private BasicGameState game;  
+    private  BasicGameState end;
     
 	public Main(String name) 
 	{
 		super(name);
 		
 		game = new Game(GAME_ID);
+		end = new End(END_ID);
 	}
 
 	public static int getScreenWidth()
@@ -36,6 +39,7 @@ public class Main extends StateBasedGame
 	public void initStatesList(GameContainer gc) throws SlickException 
 	{
 		addState(game);
+		addState(end);
 	}
 
 	public static void main(String[] args) 

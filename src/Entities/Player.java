@@ -7,8 +7,10 @@ import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
 
-import Entities.Hitbox.Side;
+import Entities.Hitboxes.Hitbox;
+import Entities.Hitboxes.Hitbox.Side;
 import Entities.Objects.Weapon;
+import Status.Status;
 import Terrain.platform.Platform;
 
 public class Player extends Entity
@@ -24,10 +26,15 @@ public class Player extends Entity
     private float deceleration = 0.45f;
 	private float gravity = 0.25f;
 	private float maxSpeed = 10;
+	private float movementReductionConstant = 3f;
+	private float jumpTimer;
+	private float jumpCooldown;
+	private boolean canJump = true;
 	Input input;
 	boolean lastInputRight = false;
 	boolean lastInputLeft = false;
-	Hitbox h = new Hitbox(3,3,width,height,"Player");
+	Hitbox h = new Hitbox(3,3,width,height,"Player",this);
+	
 	ArrayList<Platform> platforms ;
 	public boolean colliding;
 	Side collisionSide;
@@ -37,18 +44,32 @@ public class Player extends Entity
 	int health = 100;
 	int cooldown;
 	private int ID;
-	
+	PlayerHUD hud = new PlayerHUD(this);
+	//private String status = "";
 	boolean logPositions = false;
+	private Status status;
+	
+	boolean paralyzed;
 	
 	public Player(int startX, int startY,  Weapon w, int PlayerID) 
 	{
 		x = startX;
 		y = startY;
 		this.w = w;
+		jumpCooldown = (int) (1.5 * 60);
 		w.setPlayer(this);
 		cooldown = w.getCooldownTimer();
 		ID = PlayerID;
 		//Hitbox h = new Hitbox(x,y,width,height,"Player");
+	}
+	
+	public String getName() 
+	{
+		if(ID == 1)
+			return "Player 1";
+		else
+			return "Player 2";
+		
 	}
 	
 	public void setOpponent(Entity e) 
@@ -59,6 +80,7 @@ public class Player extends Entity
 	public void init(GameContainer gc) 
 	{
 		input = gc.getInput();
+		h.setPlayer(this);
 	}
 	
 	public void setPlatform(ArrayList<Platform> platforms)
@@ -66,18 +88,36 @@ public class Player extends Entity
 		this.platforms = platforms;
 	}
 	
+	public void setParalysis(boolean paralyzed) 
+	{
+		this.paralyzed = paralyzed;
+	}
+	
 	public void update(GameContainer gc) 
 	{
 		
+		if(status != null) {
+			status.implementConditions();
+			status.resolveStatus();
+		}
 		
-	
+		// JumpTimer
+		if(jumpTimer == jumpCooldown) 
+		{
+			canJump = true;
+		}
+		
+		if(jumpTimer < jumpCooldown) 
+		{
+			jumpTimer ++;
+		}
 		
 		w.update();
 		
 		if(cooldown > 0)
 			cooldown --;
 		
-		if(ID == 1) 
+		if(ID == 1 && !paralyzed) 
 		{
 			if(input.isKeyDown(input.KEY_Q) && cooldown == 0) 
 			{
@@ -96,14 +136,26 @@ public class Player extends Entity
 
 			if(input.isKeyDown(input.KEY_R) && cooldown == 0) 
 			{
+				w.projectileAttack();
+				
+				cooldown = w.getCooldownTimer();
+			}
+			
+			if(input.isKeyDown(input.KEY_T) && cooldown == 0) 
+			{
 				w.upAttack();
 				
 				cooldown = w.getCooldownTimer();
 			}
 			
+			if(input.isKeyDown(input.KEY_F) && cooldown == 0) 
+			{
+				w.areaOfEffectAttack();
+				cooldown = w.getCooldownTimer();
+			}
 			
 			
-		}else if(ID == 2) 
+		}else if(ID == 2 && !paralyzed) 
 		{
 			
 			
@@ -126,6 +178,12 @@ public class Player extends Entity
 
 			if(input.isKeyDown(input.KEY_P) && cooldown == 0) 
 			{
+				w.projectileAttack();
+				
+				cooldown = w.getCooldownTimer();
+			}
+			if(input.isKeyDown(input.KEY_0) && cooldown == 0) 
+			{
 				w.upAttack();
 				
 				cooldown = w.getCooldownTimer();
@@ -138,9 +196,24 @@ public class Player extends Entity
 		
 		
 		 if (lastInputLeft && xVelocity > maxSpeed * -1) {
-			 xVelocity -= acceleration;
+			 if(!(getPlayerDirection().equalsIgnoreCase("Left")) && xVelocity <= 0)
+	        	{
+	        		xVelocity -= (acceleration / movementReductionConstant);
+	        	}else 
+	        	{
+	        		xVelocity -= acceleration;
+	        	}
+			 
+		
 	        } else if (lastInputRight && xVelocity < maxSpeed) {
-	        	xVelocity += acceleration;
+	        	if(!(getPlayerDirection().equalsIgnoreCase("Right")) && xVelocity >= 0)
+	        	{
+	        		xVelocity += (acceleration / movementReductionConstant);
+	        	}else 
+	        	{
+	        		xVelocity += acceleration;
+	        	}
+	        	
 	        } else {
 	            // Apply deceleration when not moving
 	            if (xVelocity > 0) {
@@ -157,7 +230,7 @@ public class Player extends Entity
 		
 		
 		
-	if(ID == 1) 
+	if(ID == 1 && !paralyzed) 
 	{
 		if(input.isKeyDown(input.KEY_D)) 
 		{
@@ -177,7 +250,7 @@ public class Player extends Entity
 			lastInputRight = false;
 			lastInputLeft = false;
 		}		
-	}else if(ID == 2) 
+	}else if(ID == 2 && !paralyzed) 
 	{
 		if(input.isKeyDown(input.KEY_L)) 
 		{
@@ -239,21 +312,26 @@ public class Player extends Entity
 		}
 		
 		
-		if(ID == 1) 
+		if(ID == 1 && !paralyzed) 
 		{
-			if(input.isKeyPressed(input.KEY_W)) 
+			
+				if(canJump && input.isKeyPressed(input.KEY_W))
+				{
+					y -= 1;
+					yVelocity = - 10;	
+					jumpTimer = 0;
+					canJump = false;
+				}
+				
+			
+		} else if(ID == 2 && !paralyzed) 
+		{
+			if(canJump && input.isKeyPressed(input.KEY_I))
 			{
 				y -= 1;
-				yVelocity = - 10;
-				
-			}
-		} else if(ID == 2) 
-		{
-			if(input.isKeyPressed(input.KEY_I)) 
-			{
-				y -= 1;
-				yVelocity = - 10;
-				
+				yVelocity = - 10;	
+				jumpTimer = 0;
+				canJump = false;
 			}
 		}
 		
@@ -355,13 +433,36 @@ public class Player extends Entity
 	{
 		g.drawString("Attack_Cooldown: " + cooldown, x, y - 10);
 		g.drawString("In Air: " + inAir(), x, y - 20);
-		
+		g.drawString("Player Direction: " + getPlayerDirection(), x,y-30);
+		status.draw(g);
 	}
 	
 	public boolean inAir() 
 	{
 		return !(yVelocity == 0.25);
 	}
+	
+	public Status getStatus() 
+	{
+		return status;
+	}
+	
+	public void setStatus(Status status) 
+	{
+		this.status = status;
+	}
+	
+	
+	
+//	public String getStatus() 
+//	{
+//		return status;
+//	}
+//	
+//	public void setStatus(String status) 
+//	{
+//		this.status = status;
+//	}
 	
 	
 	public void scriptedUpwardAttackMovement() 
@@ -381,30 +482,32 @@ public class Player extends Entity
 	public void render(Graphics g) 
 	{
 		
-		debug(g);
+		//debug(g);
 		
 		float weaponX = x;
 		float weaponY = y;
 		
 		g.setColor(Color.white);
 		g.fillRect(x, y, width, height);
-		g.drawString("XVel: " + xVelocity + "YVel: " + yVelocity,  0,0);
-		g.drawString("CollisionSide: " + collisionSide + "Colliding: " + colliding, 0,50);
-		if(platformColliding != null)
-		g.drawString("Platform Colliding X: " + platformColliding.getX(), 0,100);
+		//g.drawString("XVel: " + xVelocity + "YVel: " + yVelocity,  0,0);
+		//g.drawString("CollisionSide: " + collisionSide + "Colliding: " + colliding, 0,50);
+		
+		
 		
 		
 		
 		
 		h.render(g);
 		 
-		g.drawString("" + health, x, y - 20);	
-		   
+	
+		hud.draw(g); 
 		
 		w.draw(g, weaponX, weaponY);
 	}
+	
 
-	public float getX() 
+
+	public float getX()
 	{
 		return x;
 	}
@@ -421,6 +524,20 @@ public class Player extends Entity
 	public float getHeight() 
 	{
 		return height;
+	}
+	
+	public String getPlayerDirection() 
+	{
+		if(x < getOpponentXPosition())
+			return "Right";
+		else if(x >= getOpponentXPosition()) 
+			return "Left";
+		else return "N/A";
+	}
+	
+	public float getOpponentXPosition() 
+	{
+		return getOpponent().getX();
 	}
 	
 	public boolean lastDirectionRight() 
@@ -443,6 +560,16 @@ public class Player extends Entity
 	public void setDamage(int i) 
 	{
 		health -= i;
+	}
+	
+	public int getHealth() 
+	{
+		return health;
+	}
+	
+	public int getID() 
+	{
+		return ID;
 	}
 
 	@Override

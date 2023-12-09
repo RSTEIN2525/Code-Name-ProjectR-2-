@@ -19,6 +19,7 @@ import Terrain.platform.Platform;
 public class Game extends BasicGameState 
 {	
 	private int id;
+	public static String winnerName;
 	Weapon w1 = new GreatSword();
 	Weapon w2 = new GreatSword();
 	Player p1 = new Player(200,200, w1, 1);
@@ -43,11 +44,11 @@ public class Game extends BasicGameState
 		p2.init(gc);
 		p1.setOpponent(p2);
 		p2.setOpponent(p1);
-		platforms.add(new Platform(1080,1080- 200,300,50));
-		platforms.add(new Platform(0,1080 - 50,1920,50));
-		platforms.add(new Platform(0,0,1920,50));
-		platforms.add(new Platform(0,0,50,1080));
-		platforms.add(new Platform(1920 - 50,0,50,1080));
+		platforms.add(new Platform(1080,1080- 200,300,50)); //mid stage
+		platforms.add(new Platform(0,1080-50,1920,50)); // bottom
+		platforms.add(new Platform(0,0,1920,50)); //top
+		platforms.add(new Platform(0,0,50,1080)); //left
+		platforms.add(new Platform(1920 - 50,0,50,1080)); //right
 		
 	}
 
@@ -58,6 +59,16 @@ public class Game extends BasicGameState
 		p1.setPlatform(platforms);
 		p2.setPlatform(platforms);
 		// This is updates your game's logic every frame.  NO DRAWING.
+		
+		
+		if(p1.getHealth() <= 0) {
+			winnerName = p2.getName();
+			sbg.enterState(1);
+		}
+		if(p2.getHealth() <= 0) {
+			winnerName = p1.getName();
+			sbg.enterState(1);
+		}	
 	}
 
 	public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException 
