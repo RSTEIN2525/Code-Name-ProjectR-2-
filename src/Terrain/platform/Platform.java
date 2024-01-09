@@ -19,7 +19,7 @@ public class Platform
 		this.y = y;
 		this.width = width;
 		this.height = height;
-		h =  new Hitbox(x,y,width,height,"Platform", null);
+		h =  new Hitbox(x,y,width,height,"Platform", null,99);
 	}
 	
 	public void render(Graphics g) 

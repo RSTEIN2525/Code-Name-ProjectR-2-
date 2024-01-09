@@ -13,6 +13,7 @@ import org.newdawn.slick.state.StateBasedGame;
 import Entities.Dummy;
 import Entities.Player;
 import Entities.Objects.GreatSword;
+import Entities.Objects.PsychoStaff;
 import Entities.Objects.Weapon;
 import Terrain.platform.Platform;
 
@@ -20,8 +21,8 @@ public class Game extends BasicGameState
 {	
 	private int id;
 	public static String winnerName;
-	Weapon w1 = new GreatSword();
 	Weapon w2 = new GreatSword();
+	Weapon w1 = new PsychoStaff("PsychoStaff", 0, 0, 0);
 	Player p1 = new Player(200,200, w1, 1);
 	Player p2 = new Player(900,200,w2,2);
 	ArrayList<Platform> platforms = new ArrayList<>();

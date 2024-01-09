@@ -24,6 +24,18 @@ public class GreatSword extends Weapon{
 	 public static int GREATSWORD_UP_DAMAGE = 5 ; // land before reset
 	 public static int GREATSWORD_DOWN_DAMAGE =  5 ; //land before reset
 	 public static int GREATSWORD_KNOCKBACK = 10;
+	 public static int GREATSWORD_LIGHT_DURATION = 120;
+	 public static int RAGE_ON_LANDING_HEAVY = 30;
+	 public static int RAGE_ON_LANDING_LIGHT = 15;
+	 public static int RAGE_ON_LANDING_PROJECTILE = 12;
+	 public static int RAGE_ON_LANDING_UP = 25;
+	 public static int RAGE_ON_LANDING_EXPANSION = -100;
+	 public static int GREATSWORD_EXPANSION_DAMAGE = 8;
+	 public static int LIGHT_ATTACK_DURATION = 15;
+	 public static int HEAVY_ATTACK_DURATION = 25;
+	 public static int AOE_ATTACK_DURATION = 30;
+	 public static int PROJECTILE_ATTACK_DURATION = 30;
+	 public static int EXPANSION_ATTACK_DURATION = 30;
 	 float x;
 	 float y;
 	 float slashX;
@@ -34,7 +46,7 @@ public class GreatSword extends Weapon{
 	 //Hitbox projectileHitbox = new Hitbox(x,y,w,h,"Weapon", this);
 	// Hitbox upAttackHitbox = new Hitbox(x,y,w,h,"Weapon",this );
 	
-	 Hitbox hitbox;
+	// Hitbox hitbox;
 	 Hitbox projectileHitbox;
 	 Hitbox upAttackHitbox;
 	 Hitbox areaOfEffectHitbox;
@@ -83,7 +95,8 @@ public class GreatSword extends Weapon{
 	    	areaOfEffectHitbox.editDimensions(0,0,width);
 	    	areaOfEffectHitbox.setExpansion(expansionRate,expansionRate,maxWidth,w);
 	    	setCooldown(GREATSWORD_LIGHT_COOLDOWN);
-	    	setDamage(GREATSWORD_HEAVY_DAMAGE * 2);
+	    	setDamage(GREATSWORD_EXPANSION_DAMAGE);
+	    	p.incrementRage(RAGE_ON_LANDING_EXPANSION);
 	    	
 	    	
 	    	
@@ -93,7 +106,7 @@ public class GreatSword extends Weapon{
 	    {
 	    	//setCooldown(60);
 	    	upAttackHitbox = null;
-	    	upAttackHitbox = new Hitbox(p.getX(), p.getY() - p.getHeight() + (p.getHeight()),32, 32, "Weapon",p);
+	    	upAttackHitbox = new Hitbox(p.getX(), p.getY() - p.getHeight() + (p.getHeight()),32, 32, "Weapon",p,GREATSWORD_LIGHT_DURATION);
 	    	upAttackHitbox.setPlayer(p);
 	    	
 	    	upAttackHitbox.editDimensions(2 * GREATSWORD_RANGE, GREATSWORD_RANGE / 2,0);
@@ -169,7 +182,7 @@ public class GreatSword extends Weapon{
 	    public void lightAttack() 
 	    {
 	    	
-	    	lightAttackHitbox = new Hitbox(p.getX(), p.getY() - p.getHeight() + (p.getHeight()),32, 32, "Weapon",p);
+	    	lightAttackHitbox = new Hitbox(p.getX(), p.getY() - p.getHeight() + (p.getHeight()),32, 32, "Weapon",p,LIGHT_ATTACK_DURATION);
 	    	lightAttackHitbox.editDimensions(2 * GREATSWORD_RANGE, GREATSWORD_RANGE / 2,0);
 	    	setCooldown(GREATSWORD_LIGHT_COOLDOWN);
 	    	setDamage(GREATSWORD_LIGHT_DAMAGE);
@@ -193,14 +206,14 @@ public class GreatSword extends Weapon{
 	    
 	    public void heavyAttack() {
 	       
-	    	heavyAttackHitbox = new Hitbox(p.getX(), p.getY() - p.getHeight() + (p.getHeight()),32, 32, "Weapon",p);
-	    	heavyAttackHitbox.editDimensions( (int) 2 * GREATSWORD_RANGE, GREATSWORD_RANGE / 8,0);
+	    	heavyAttackHitbox = new Hitbox(p.getX(), p.getY() - p.getHeight() + (p.getHeight()),32, 32, "Weapon",p,HEAVY_ATTACK_DURATION);
+	    	heavyAttackHitbox.editDimensions( (int) 2 * GREATSWORD_RANGE, GREATSWORD_RANGE / 2,0);
     		setCooldown(GREATSWORD_HEAVY_COOLDOWN);
     		setDamage(GREATSWORD_HEAVY_DAMAGE);
     		setSlashX();
     		setSlashY();
     		
-    		//hitbox.setPosition(slashX, slashY);
+    		heavyAttackHitbox.setPosition(slashX + p.getWidth(), slashY);
     		 
     		
     		if(p != null && heavyAttackHitbox.intersects(p.getOpponent().getHitbox())) 
@@ -227,17 +240,33 @@ public class GreatSword extends Weapon{
 	    	slashY = p.getY() + (1/2) * GREATSWORD_RANGE;
 	    }
 	    
+	    public boolean checkHitboxDuration(Hitbox h) 
+	    {
+	    	if(h!= null)
+		    	System.out.println("Expired: " + h.durationExpired() + "Time: " + h.getDuration());
+	    	
+	    	if(h!= null) 
+	    	{
+	    		if(h.durationExpired())
+	    			return true;
+	    		
+	    	}
+	    		return false;
+	    	
+	    		
+	    }
+	    
 	    public void update() 
 	    {
 	    		
-	    		hitbox.setPlayer(p);
+	    		//hitbox.setPlayer(p);
 	    		slashX = p.getX();
 		    	slashY = p.getY();
-	    		hitbox.setPosition(slashX, slashY);
+	    		//hitbox.setPosition(slashX, slashY);
 	    		
 	    		
-	    		hitbox.editDimensions(w, h,0);
-	    		hitbox.update();
+	    		//hitbox.editDimensions(w, h,0);
+	    		//hitbox.update();
 	    		
 	    		if(heavyAttackHitbox != null)
 	    			heavyAttackHitbox.update();
@@ -246,8 +275,14 @@ public class GreatSword extends Weapon{
 	    		{
 	    			p.getOpponent().setDamage(getDamage());
 		    		p.getOpponent().setKnockback(10, heavyAttackHitbox.getCollisionSide(p.getOpponent().getHitbox()));
+		    		((Player) p.getOpponent()).incrementRage(RAGE_ON_LANDING_HEAVY / 2);
 		    		heavyAttackHitbox = null;
+		    		p.incrementRage(RAGE_ON_LANDING_HEAVY);
 	    			
+	    		}else 
+	    		{
+	    			if(checkHitboxDuration(heavyAttackHitbox))
+	    				heavyAttackHitbox = null;
 	    		}
 	    		
 	    		if(lightAttackHitbox != null)
@@ -258,7 +293,12 @@ public class GreatSword extends Weapon{
 	    			p.getOpponent().setDamage(getDamage());
 		    		p.getOpponent().setKnockback(10, lightAttackHitbox.getCollisionSide(p.getOpponent().getHitbox()));
 		    		lightAttackHitbox = null;
-	    			
+		    		p.incrementRage(RAGE_ON_LANDING_LIGHT);
+		    		((Player) p.getOpponent()).incrementRage(RAGE_ON_LANDING_LIGHT / 2);
+	    		}else 
+	    		{
+	    			if(checkHitboxDuration(lightAttackHitbox))
+	    			lightAttackHitbox = null;
 	    		}
 	    		
 	    		
@@ -271,10 +311,17 @@ public class GreatSword extends Weapon{
 	    		{
 
 		    		p.getOpponent().setDamage(getDamage());
-		    		System.out.println("Collision Side: " + areaOfEffectHitbox.getCollisionSideRectOnCircle(p.getOpponent().getHitbox()));
-		    		p.getOpponent().setKnockback(30, areaOfEffectHitbox.getCollisionSideRectOnCircle(p.getOpponent().getHitbox()));
+		    		//System.out.println("Collision Side: " + areaOfEffectHitbox.getCollisionSideRectOnCircle(p.getOpponent().getHitbox()));
+		    		p.getOpponent().setKnockback(30, areaOfEffectHitbox.getCollisionSideRectOnCircle(areaOfEffectHitbox.circleRectangleCollision(p.getOpponent().getHitbox())));
 		    		((Player) p.getOpponent()).setStatus(new Fear((Player) p.getOpponent()));
+		    		((Player) p.getOpponent()).incrementRage(RAGE_ON_LANDING_EXPANSION / 2);
 		    		areaOfEffectHitbox = null;
+//		    		p.incrementRage(-100);
+	    		}else 
+	    		{
+//	    			if(checkHitboxDuration(areaOfEffectHitbox))
+//	    				areaOfEffectHitbox = null;
+	    			
 	    		}
 	    		
 	    		
@@ -287,6 +334,12 @@ public class GreatSword extends Weapon{
 		    	{
 		    		p.getOpponent().setDamage(getDamage());
 		    		p.getOpponent().setKnockback(10, upAttackHitbox.getCollisionSide(p.getOpponent().getHitbox()));
+		    		upAttackHitbox = null;
+		    		p.incrementRage(RAGE_ON_LANDING_UP);
+		    		((Player) p.getOpponent()).incrementRage(RAGE_ON_LANDING_UP / 2);
+		    	}else 
+		    	{
+		    		if(checkHitboxDuration(upAttackHitbox))
 		    		upAttackHitbox = null;
 		    	}
 		    	
@@ -308,9 +361,10 @@ public class GreatSword extends Weapon{
 	    			if(projectileHitboxes.get(i).circleRectangleCollision(p.getOpponent().getHitbox())) 
 	    			{
 	    				p.getOpponent().setDamage(getDamage());
-			    		p.getOpponent().setKnockback(10, hitbox.getCollisionSide(p.getOpponent().getHitbox()));
+			    		//p.getOpponent().setKnockback(10, projectileHitbox.getCollisionSide(p.getOpponent().getHitbox()));
 			    		projectileHitboxes.get(i).wipeVelocityPath();
-			    		
+			    		p.incrementRage(RAGE_ON_LANDING_PROJECTILE);
+			    		((Player) p.getOpponent()).incrementRage(RAGE_ON_LANDING_PROJECTILE / 2);
 			    		
 			    		
 			    		// Add numbers to list to be removed;
@@ -334,6 +388,7 @@ public class GreatSword extends Weapon{
  			        		{
  			        			projectileHitboxes.get(i).wipeVelocityPath();
  			    	    		triggerDeletion = true;
+ 			    	    		p.incrementRage(5);
  			        		}
 	    				 }
 	    			}
@@ -400,9 +455,9 @@ public class GreatSword extends Weapon{
 	    	  g.setColor(Color.pink);
 	          g.fillRect(this.x, this.y, w,h);
 	          
-	         hitbox = new Hitbox(x,y,w,h,"Weapon", p);
+	         //hitbox = new Hitbox(x,y,w,h,"Weapon", p, GREATSWORD_LIGHT_DURATION);
 	          
-	          hitbox.render(g);
+	         // hitbox.render(g);
 	          for(int i = 0; i < projectileHitboxes.size(); i++) 
 	    		{
 	    			projectileHitboxes.get(i).render(g);

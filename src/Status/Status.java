@@ -59,6 +59,7 @@ public abstract class Status {
 	
 	public void removeConditions() 
 	{
+		
 		System.out.print("Condition Removed");
 	}
 	

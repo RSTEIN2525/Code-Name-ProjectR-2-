@@ -9,6 +9,8 @@ import org.newdawn.slick.Input;
 
 import Entities.Hitboxes.Hitbox;
 import Entities.Hitboxes.Hitbox.Side;
+import Entities.Objects.GreatSword;
+import Entities.Objects.PsychoStaff;
 import Entities.Objects.Weapon;
 import Status.Status;
 import Terrain.platform.Platform;
@@ -30,15 +32,17 @@ public class Player extends Entity
 	private float jumpTimer;
 	private float jumpCooldown;
 	private boolean canJump = true;
+	public static int MAX_RAGE = 100;
 	Input input;
 	boolean lastInputRight = false;
 	boolean lastInputLeft = false;
-	Hitbox h = new Hitbox(3,3,width,height,"Player",this);
+	Hitbox h = new Hitbox(3,3,width,height,"Player",this, 99);
 	
 	ArrayList<Platform> platforms ;
 	public boolean colliding;
 	Side collisionSide;
 	Platform platformColliding;
+	int rageDeductionTimer = 60;
 	Entity Opponent;
 	Weapon w;
 	int health = 100;
@@ -48,6 +52,7 @@ public class Player extends Entity
 	//private String status = "";
 	boolean logPositions = false;
 	private Status status;
+	int rage = 20;
 	
 	boolean paralyzed;
 	
@@ -81,6 +86,8 @@ public class Player extends Entity
 	{
 		input = gc.getInput();
 		h.setPlayer(this);
+		if(w instanceof PsychoStaff)
+		((PsychoStaff) w).init(gc);
 	}
 	
 	public void setPlatform(ArrayList<Platform> platforms)
@@ -93,13 +100,60 @@ public class Player extends Entity
 		this.paralyzed = paralyzed;
 	}
 	
+	public void handleRage() 
+	{
+		if(rageDeductionTimer == 60) 
+		{
+			if(rage > 0 && rage < 100) 
+			{
+				rage -- ;
+			}
+			
+			rageDeductionTimer = 0;
+		}
+		
+		if(rageDeductionTimer < 60)
+			rageDeductionTimer ++;
+		
+	}
+	
+	public int getRage() 
+	{
+		return rage;
+	}
+	
+	public boolean rageFull() 
+	{
+		return (rage == 100);
+	}
+	
+	public Weapon getWeapon() 
+	{
+		return w; 
+	}
+	
+	public void incrementRage(int increment) 
+	{
+		rage += increment;
+		if(rage >= 100)
+			rage = 100;
+	}
+	
 	public void update(GameContainer gc) 
 	{
 		
-		if(status != null) {
+		if(this.w instanceof GreatSword)
+			handleRage();
+		
+		if(status != null && !status.getStatusType().equalsIgnoreCase("None")) {
 			status.implementConditions();
 			status.resolveStatus();
+		}else 
+		{
+			setParalysis(false);
 		}
+		
+		
 		
 		// JumpTimer
 		if(jumpTimer == jumpCooldown) 
@@ -121,7 +175,10 @@ public class Player extends Entity
 		{
 			if(input.isKeyDown(input.KEY_Q) && cooldown == 0) 
 			{
-				w.lightAttack();
+				if(w instanceof GreatSword)
+					w.lightAttack();
+				
+				
 				
 				cooldown = w.getCooldownTimer();
 			}
@@ -148,8 +205,9 @@ public class Player extends Entity
 				cooldown = w.getCooldownTimer();
 			}
 			
-			if(input.isKeyDown(input.KEY_F) && cooldown == 0) 
+			if(input.isKeyDown(input.KEY_F) && rageFull()) 
 			{
+				System.out.println("Happens");
 				w.areaOfEffectAttack();
 				cooldown = w.getCooldownTimer();
 			}
@@ -158,7 +216,11 @@ public class Player extends Entity
 		}else if(ID == 2 && !paralyzed) 
 		{
 			
-			
+			if(input.isKeyDown(input.KEY_M) && rageFull()) 
+			{
+				w.areaOfEffectAttack();
+				cooldown = w.getCooldownTimer();
+			}
 			
 			
 			if(input.isKeyDown(input.KEY_U) && cooldown == 0) 
@@ -499,7 +561,7 @@ public class Player extends Entity
 		
 		h.render(g);
 		 
-	
+		g.drawString("Paralysis: " + paralyzed, x, y - 100);
 		hud.draw(g); 
 		
 		w.draw(g, weaponX, weaponY);

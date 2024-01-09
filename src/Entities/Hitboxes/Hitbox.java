@@ -19,8 +19,9 @@ public class Hitbox {
     float startingWidth; float startingExpansionY;
     boolean isCircleHitbox;
     boolean radiusIsGrowing;
+    public int duration;
     
-    public Hitbox(float x, float y, float width, float height, String type, Player owner) {
+    public Hitbox(float x, float y, float width, float height, String type, Player owner, int duration) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -28,6 +29,7 @@ public class Hitbox {
         this.type = type;
         p = owner;
         isCircleHitbox = false;
+        this.duration = duration;
     }
     
     public Hitbox(float x, float y, float radius, String type, Player owner) 
@@ -39,6 +41,16 @@ public class Hitbox {
          p = owner;
          isCircleHitbox = true;
 	}
+    
+    public int getDuration() 
+    {
+    	return duration;
+    }
+    
+    public boolean durationExpired() 
+    {
+    	return duration == 0;
+    }
     
     public void editDimensions(int width, int height, int radius) 
     {
@@ -91,6 +103,12 @@ public class Hitbox {
     
     public void update() 
     {
+    	
+    	if(duration > 0) 
+    	{
+    		duration --;
+    	}
+    	
     	
     	if(p.getPlayerDirection().equalsIgnoreCase("Right"))
     	{
@@ -152,27 +170,11 @@ public class Hitbox {
         TOP, BOTTOM, LEFT, RIGHT, NONE
     }
     
-    public Side getCollisionSideRectOnCircle(Hitbox other) {
-        float closestX = Math.max(other.getX(), Math.min(x, other.getX() + other.getWidth()));
-        float closestY = Math.max(other.getY(), Math.min(y, other.getY() + other.getHeight()));
-
-        float dx = (x + radius) - closestX;
-        float dy = (y + radius) - closestY;
-        float widthSum = other.getWidth();
-        float heightSum = other.getHeight();
-
-        float crossWidth = widthSum * dy;
-        float crossHeight = heightSum * dx;
-
-        if (Math.abs(dx) <= widthSum && Math.abs(dy) <= heightSum) {
-            if (crossWidth > crossHeight) {
-                return (crossWidth > -crossHeight) ? Side.BOTTOM : Side.LEFT;
-            } else {
-                return (crossWidth > -crossHeight) ? Side.RIGHT : Side.TOP;
-            }
-        }
-
-        return Side.NONE;
+    public Side getCollisionSideRectOnCircle(boolean isColliding) {
+       
+    	if(p.getPlayerDirection().equalsIgnoreCase("Right") && isColliding)
+    		return Side.LEFT;
+    	else return Side.RIGHT;
     }
 
     	public boolean circleRectangleCollision(Hitbox h) {
